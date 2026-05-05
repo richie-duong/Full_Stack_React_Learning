@@ -61,6 +61,16 @@ To Define a Dynamic Route, set up a route with a colon, followed by a placeholde
 Extracting the data allows you to call useParams() to get an object containing those values. But before doing so, you must import:
 `import { useParams } from 'react-router-dom';`
 
-
 ### Creating and linking the articles list
 Dynamically creating and linking each article in a list on the articles page. Everything here is simplified using JS's map function.
+
+
+
+## Back End using Node.js
+npm init -y Keep track of basic information about the project
+npm install express
+Create src folder with server.js file in it
+
+End-point is a path we can send a request to, and send some sort of data or message back.
+
+## Testing an Express server with Postman
