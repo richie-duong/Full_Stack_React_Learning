@@ -13,12 +13,11 @@ Make a folder called `pages` in src folder. Create .jsx files for each correspon
 ### Adding React Router to the app
 Allows you to customize routes / url for each page on the website.
 
-Run `npm install react-router-dom`.
+- Run `npm install react-router-dom`.
 
-Import the following to get started:
-`import {createBrowserRouter, RouterProvider} from 'react-router-dom'`. createBrowserRouter is the recommended router for React Router web projects, designed to enable modern data APIs such as loaders, actions, and fetchers. Its primary purpose is to move routing configuration outside the React tree, enabling optimized, parallelized data loading and improved error handling compared to the legacy <BrowserRouter>.
+- Import the following to get started: `import {createBrowserRouter, RouterProvider} from 'react-router-dom'`. 'createBrowserRouter' is the recommended router for React Router web projects, designed to enable modern data APIs such as loaders, actions, and fetchers. Its primary purpose is to move routing configuration outside the React tree, enabling optimized, parallelized data loading and improved error handling compared to the legacy <BrowserRouter>.
 
-Create your routes like the example shown below:
+- Create your routes like the example shown below:
 ```
 const routes = [{
   path: '/',
@@ -43,9 +42,7 @@ const router = createBrowserRouter(routes);
 ```
 
 ### Using React Router Links
-Import the following: `import {Link} from "react-router-dom"`
-
-Rather than using an anchor tag for each navbar item (use "Link" and not "link", it IS case sensitive).
+- Import the following: `import {Link} from "react-router-dom"`. Rather than using an anchor tag for each navbar item (use "Link" and not "link", it IS case sensitive).
 
 Example of using Link:
 `<Link to="/page"></Link>`
@@ -67,10 +64,67 @@ Dynamically creating and linking each article in a list on the articles page. Ev
 
 
 ## Back End using Node.js
-npm init -y Keep track of basic information about the project
-npm install express
-Create src folder with server.js file in it
+- Run `npm init -y` in terminal to Keep track of basic information about the project.
+- Run `npm install express` to setup Express (designed to simplify the process of building web apps and APIs).
+- Create a src folder with `server.js` file in it, containing the backend codes.
 
-End-point is a path we can send a request to, and send some sort of data or message back.
+An 'End-point' is a path we can send a request to, and send some sort of data or message back.
 
-## Testing an Express server with Postman
+## Using Express
+Use the following in your server.js to setup the Express app.
+```
+import express from 'express';
+
+const app = express();
+
+// Automatically parse incoming JSON requests so the data can be accessed directly via req.body
+app.use(express.json());
+```
+
+### Testing an Express server with Postman
+To prevent having to terminate and restarting the terminal, we can have changes applied automatically by installing 'nodemon'. Once installed, run like: `npx nodemon src/server.js`
+
+### Use Nodemon to automatically update
+Edit the package.json file to simplify command. Under 'scripts', add the following:
+`"dev": "npx nodemon src/server.js"`
+
+
+## Persisting Data w/ MongoDB
+MongoDB is a Non-relational database that stores JSON-like data into collections (equivalent to a relational db's 'tables'). 
+
+### Establishing a MongoDB database connection
+Below, is a guide to setting up a connection to your MongoDB, allowing a variety of endpoints to access the db without having to reinitialize a db connection every single time:
+
+```
+import { MongoClient, ServerApiVersion } from 'mongodb';
+
+let db;
+
+async function connectToDB() {
+    const uri = 'mongodb://127.0.0.1:27017';
+    const client = new MongoClient(uri, {
+        serverApi: {
+            version:ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        }
+    })
+    await client.connect();
+    db = client.db('full-stack-react-db');
+}
+
+async function start() {
+    await connectToDB();
+    app.listen(8000, function() {
+        console.log('Server is listening on port 8000');
+    });
+}
+
+start();
+```
+
+### Important MongoDB syntax
+- `db.collection().findOne( filter, replacement, options)` Returns one document that satisfies the specfied query criteria on the collection or view. More info: https://www.mongodb.com/docs/manual/reference/method/db.collection.findOne/
+- `db.collection().findOneAndUpdate( filter, update, options )` Updates a single document based on the filter and sort criteria. More info: https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+
+
