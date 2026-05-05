@@ -3,10 +3,11 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
+import axios from 'axios';
 import './App.css'
 import Home from './pages/Home'
 import About from './pages/About'
-import ArticlePage from './pages/ArticlePage'
+import ArticlePage, { loader as articleLoader } from './pages/ArticlePage'
 import Layout from './Layout'
 import ArticlesListPage from './pages/ArticlesListPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -26,7 +27,10 @@ const routes = [{
     element: <ArticlesListPage />
   }, {
     path: '/articles/:name',
-    element: <ArticlePage />
+    element: <ArticlePage />,
+    
+    // Axios section here
+    loader: articleLoader
   }]
 }]
 

@@ -1,14 +1,21 @@
 # Learning and Hosting a React Full-Stack Website
 All content derived from LinkedIn Learning's: React: Creating and Hosting a Full-Stack Site by: Shaun Wassell
+
+
+
+
 ## Front End using React
+
 
 ### Setting up project files
 run `npm create vite@latest` to set up front-end directory
 run `npm install` in the front-end directory
 npm `run dev` to start react application
 
+
 ### Rendering pages Displaying on different routes
 Make a folder called `pages` in src folder. Create .jsx files for each corresponding web page.
+
 
 ### Adding React Router to the app
 Allows you to customize routes / url for each page on the website.
@@ -41,6 +48,7 @@ const routes = [{
 const router = createBrowserRouter(routes);
 ```
 
+
 ### Using React Router Links
 - Import the following: `import {Link} from "react-router-dom"`. Rather than using an anchor tag for each navbar item (use "Link" and not "link", it IS case sensitive).
 
@@ -48,6 +56,7 @@ Example of using Link:
 `<Link to="/page"></Link>`
 
 It is BEST to create a Layout.jsx file to re-render shared UI elements across multiple pages. Create and use a Navbar component along with the <Outlet /> component (tells router exactly where to render child route components within a parent layout) in your Layout.jsx file.
+
 
 ### URL parameters with React Router
 Allows you to use URL parameters inside your code, which can allow users to navigate to a Dynamic route.
@@ -58,8 +67,10 @@ To Define a Dynamic Route, set up a route with a colon, followed by a placeholde
 Extracting the data allows you to call useParams() to get an object containing those values. But before doing so, you must import:
 `import { useParams } from 'react-router-dom';`
 
+
 ### Creating and linking the articles list
 Dynamically creating and linking each article in a list on the articles page. Everything here is simplified using JS's map function.
+
 
 
 
@@ -69,6 +80,7 @@ Dynamically creating and linking each article in a list on the articles page. Ev
 - Create a src folder with `server.js` file in it, containing the backend codes.
 
 An 'End-point' is a path we can send a request to, and send some sort of data or message back.
+
 
 ## Using Express
 Use the following in your server.js to setup the Express app.
@@ -81,8 +93,10 @@ const app = express();
 app.use(express.json());
 ```
 
+
 ### Testing an Express server with Postman
 To prevent having to terminate and restarting the terminal, we can have changes applied automatically by installing 'nodemon'. Once installed, run like: `npx nodemon src/server.js`
+
 
 ### Use Nodemon to automatically update
 Edit the package.json file to simplify command. Under 'scripts', add the following:
@@ -91,6 +105,7 @@ Edit the package.json file to simplify command. Under 'scripts', add the followi
 
 ## Persisting Data w/ MongoDB
 MongoDB is a Non-relational database that stores JSON-like data into collections (equivalent to a relational db's 'tables'). 
+
 
 ### Establishing a MongoDB database connection
 Below, is a guide to setting up a connection to your MongoDB, allowing a variety of endpoints to access the db without having to reinitialize a db connection every single time:
@@ -123,8 +138,32 @@ async function start() {
 start();
 ```
 
+
 ### Important MongoDB syntax
 - `db.collection().findOne( filter, replacement, options)` Returns one document that satisfies the specfied query criteria on the collection or view. More info: https://www.mongodb.com/docs/manual/reference/method/db.collection.findOne/
 - `db.collection().findOneAndUpdate( filter, update, options )` Updates a single document based on the filter and sort criteria. More info: https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+
+
+
+
+## Connecting the Front and Back-End using AXIOS
+Axios is a popular promise-based HTTP client library for JavaScript, used to make asynchronous network requests from browsers and Node.js environments. It simplified interacting with RESTful APIs by providing an intuitive API for HTTP methods and automatically transforming JSON data.
+
+- Run `npm install axios` in the front-end directory to get started.
+- Add a loader to a route using `loader`. You can add a function, or to make it more modular, add it to to the corresponding JSX page file and add props to the functions. Follow the following code snippet below and remember to import axios:
+```
+export async function loader({ params }) {
+  const response = await axios.get('/api/articles/' + params.name);
+  const { upvotes, comments } = response.data;
+  return { upvotes, comments }
+}
+```
+
+- Use React's useState hook throughout all of this. Example shown here:
+```
+const [count, setCount] = useState(); // initial state goes in useState()
+```
+
+
 
 
