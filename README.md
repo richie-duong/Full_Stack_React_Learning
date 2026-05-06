@@ -164,6 +164,46 @@ export async function loader({ params }) {
 const [count, setCount] = useState(); // initial state goes in useState()
 ```
 
+- Vite.Config.JS Setup: Whenever the React app calls /api/..., secretly send requests to my backend server instead. This will allow frontend and backend to work together without CORS issues.
+```
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://r84zf4x2-8000.use.devtunnels.ms',
+        changeOrigin: 'true'
+      }
+    }
+  }
+})
+```
 
 
 
+## Adding User Authentication w/ Firebase Authentication (Front-End)
+- Run `npm install firebase` in front-end directory.
+- Copy the block of code provided by Firebase (runs when react app is loaded on browser that will connect to Firebase auth) to Main.jsx. Add it before any block of code to ensure it runs before rendering the React app.
+
+- Change sign-in method / provider on Firebase to Email/Password, and ensure that it is enabled.
+
+## Adding User Authentication w/ Firebase Authentication (Back-End)
+- Run `npm install firebase-admin` and `import admin from 'firebase-admin';`
+- Go to Project Settings > Service Accounts in firebase. Copy the block of code and put it into project. Aavoid pushing through GitHub, as key is confidential. This can be achieved using through `.gitignore`.
+
+## Protecting endpoints using auth tokens
+Below is Express middleware that runs before your routes and makes sure every request has a valid Firebase auth token. If it does, it attaches the decoded user to the request; if not, it blocks the request.
+```
+// Middleware to load the user: Applies to all endpoints below (order matters)
+app.use(async function(req, res, next) {
+  const { authtoken } = req.headers;
+  if (authtoken) {
+    const user = await admin.auth().verifyIdToken(authtoken);
+    req.user = user;
+    next();
+  } else {
+    res.sendStatus(400);
+  }
+})
+```

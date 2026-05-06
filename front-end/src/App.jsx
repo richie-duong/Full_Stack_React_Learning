@@ -11,6 +11,8 @@ import ArticlePage, { loader as articleLoader } from './pages/ArticlePage'
 import Layout from './Layout'
 import ArticlesListPage from './pages/ArticlesListPage'
 import NotFoundPage from './pages/NotFoundPage'
+import LoginPage from './pages/LoginPage'
+import CreateAccountPage from './pages/CreateAccountPage'
 
 const routes = [{
   path: '/',
@@ -31,6 +33,12 @@ const routes = [{
     
     // Axios section here
     loader: articleLoader
+  }, {
+    path: '/login',
+    element: <LoginPage />,
+  }, {
+    path: '/create-account',
+    element: <CreateAccountPage />,
   }]
 }]
 

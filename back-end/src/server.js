@@ -1,5 +1,16 @@
 import express from "express";
 import { MongoClient, ServerApiVersion } from "mongodb";
+import admin from 'firebase-admin';
+import fs from 'fs';
+
+//var serviceAccount = require("path/to/serviceAccountKey.json");
+const credentials = JSON.parse(
+  fs.readFileSync('./credentials.json')
+)
+
+admin.initializeApp({
+  credential: admin.credential.cert(credentials)
+});
 
 const app = express();
 
@@ -28,21 +39,44 @@ app.get("/api/articles/:name", async (req, res) => {
   res.json(article);
 });
 
+// Middleware to load the user: Applies to all endpoints below (order matters)
+app.use(async function(req, res, next) {
+  const { authtoken } = req.headers;
+  if (authtoken) {
+    const user = await admin.auth().verifyIdToken(authtoken);
+    req.user = user;
+    next();
+  } else {
+    res.sendStatus(400);
+  }
+})
+
 // Rewriting the upvote endpoint
 app.post("/api/articles/:name/upvote", async (req, res) => {
   const { name } = req.params;
-  const updatedArticle = await db.collection("articles").findOneAndUpdate(
-    { name },
-    {
-      // MongoDB for incrementing
-      $inc: { upvotes: 1 },
-    },
-    {
-      returnDocument: "after",
-    },
-  );
+  const { uid } = req.user;
 
-  res.json(updatedArticle);
+  //original article
+  const article = await db.collection('articles').findOne({ name });
+
+  const upvoteIds = article.upvoteIds || [];
+  const canUpvote = uid && !upvoteIds.includes(uid);
+
+  if (canUpvote) {
+    const updatedArticle = await db.collection("articles").findOneAndUpdate(
+      { name },
+      {
+        // MongoDB for incrementing
+        $inc: { upvotes: 1 },
+        $push: { upvoteIds: uid },
+      },
+      {
+        returnDocument: "after",
+      })
+    res.json(updatedArticle);
+  } else {
+    res.sendStatus(403);
+  };
 });
 
 app.post("/api/articles/:name/comments", async (req, res) => {
