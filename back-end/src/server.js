@@ -3,6 +3,12 @@ import { MongoClient, ServerApiVersion } from "mongodb";
 import admin from 'firebase-admin';
 import fs from 'fs';
 
+// importing dependencies for app release
+import path from 'path'
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
 //var serviceAccount = require("path/to/serviceAccountKey.json");
 const credentials = JSON.parse(
   fs.readFileSync('./credentials.json')
@@ -17,7 +23,13 @@ const app = express();
 let db;
 
 async function connectToDB() {
-  const uri = "mongodb://127.0.0.1:27017";
+
+  const uri = !process.env.MONGODB_USERNAME
+    ? 'mongodb://127.0.0.1:27017'
+    : `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.jw3os9x.mongodb.net/?appName=Cluster0`;
+
+  // Use this version in development process, NOT deployment
+  //const uri = "mongodb://127.0.0.1:27017";
   const client = new MongoClient(uri, {
     serverApi: {
       version: ServerApiVersion.v1,
@@ -31,6 +43,15 @@ async function connectToDB() {
 
 // JSON request body
 app.use(express.json());
+
+// Preparing app for release, allowing for port 8000 to run both front-end and back-end simultaneously
+// Serves everything inside dist/ as static files and handles does files as GET requests
+app.use(express.static(path.join(__dirname, '../dist')))
+
+// For ANY route that is not /api/..., return index.html
+app.get(/^(?!\/api).+/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
+})
 
 // Rewriting endpoint to load article info from MongoDB
 app.get("/api/articles/:name", async (req, res) => {
@@ -97,11 +118,22 @@ app.post("/api/articles/:name/comments", async (req, res) => {
   res.json(updatedArticle);
 });
 
+const PORT = process.env.PORT || 8000;
+
 async function start() {
+  await connectToDB();
+  app.listen(PORT, function () {
+    console.log("Server is listening on port " + PORT);
+  });
+}
+start();
+
+
+// Use this for development, BEFORE deployment
+/*async function start() {
   await connectToDB();
   app.listen(8000, function () {
     console.log("Server is listening on port 8000");
   });
 }
-
-start();
+start();*/

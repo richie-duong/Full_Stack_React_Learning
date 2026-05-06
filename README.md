@@ -181,18 +181,18 @@ export default defineConfig({
 ```
 
 
-
-## Adding User Authentication w/ Firebase Authentication (Front-End)
+## User Authentication
+### Adding User Authentication w/ Firebase Authentication (Front-End)
 - Run `npm install firebase` in front-end directory.
 - Copy the block of code provided by Firebase (runs when react app is loaded on browser that will connect to Firebase auth) to Main.jsx. Add it before any block of code to ensure it runs before rendering the React app.
 
 - Change sign-in method / provider on Firebase to Email/Password, and ensure that it is enabled.
 
-## Adding User Authentication w/ Firebase Authentication (Back-End)
+### Adding User Authentication w/ Firebase Authentication (Back-End)
 - Run `npm install firebase-admin` and `import admin from 'firebase-admin';`
 - Go to Project Settings > Service Accounts in firebase. Copy the block of code and put it into project. Aavoid pushing through GitHub, as key is confidential. This can be achieved using through `.gitignore`.
 
-## Protecting endpoints using auth tokens
+### Protecting endpoints using auth tokens
 Below is Express middleware that runs before your routes and makes sure every request has a valid Firebase auth token. If it does, it attaches the decoded user to the request; if not, it blocks the request.
 ```
 // Middleware to load the user: Applies to all endpoints below (order matters)
@@ -207,3 +207,107 @@ app.use(async function(req, res, next) {
   }
 })
 ```
+
+
+
+
+## Hosting a Full-Stack React Application
+### Preparing an app for release
+- Run `npm run build` in the front-end directory, to take front-end files and builds it into a single bundle.
+- Move `dist` directory from front-end and move it to back-end.
+- Add `dist` to gitignore.
+- Add the following to your server.js file. This block is what lets your Node/Express server serve your built React app in production. Without it, your backend would only return API responses—your frontend would never load.
+```
+import path from 'path'
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+app.use(express.static(path.join(__dirname, '../dist')))
+
+app.get(/^(?!\/api).+/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'))
+})
+
+```
+- Port configuration via environment variables must be done because the host chooses a port (and you aren't allowed to choose your port in deployment). Do the following code in server.js to make that adjustment:
+```
+const PORT = process.env.PORT || 8000;
+
+async function start() {
+  await connectToDB();
+  app.listen(PORT, function () {
+    console.log("Server is listening on port " + PORT);
+  });
+}
+start();
+
+
+// Use this for development, BEFORE deployment
+/*async function start() {
+  await connectToDB();
+  app.listen(8000, function () {
+    console.log("Server is listening on port 8000");
+  });
+}
+start();*/
+```
+- You should now be able to just `npm run dev` on JUST the backend. Loadng browser on port 8000 will allow you to run both front-end AND backend.
+
+
+### Setting up hosting for MongoDB
+- Create new project on Mongo Atlas and deploy your cluster.
+- Modal will appear, showing you how to connect to your cluster.
+- Copy username and password over to an .env file in the back-end directory like below:
+```
+MONGODB_USERNAME={username goes here}
+MONGODB_PASSWORD={password goes here}
+```
+- BE SURE to add this .env to gitignore!!!
+- Go back to MongoDB Atlas and CREATE USER. 
+- Choose connection method > Shell > Copy connection string > Run the connection string in terminal.
+- Add data to the same cluster specified ins server.js like below:
+```
+use full-stack-react-db
+db.articles.insertMany([{}])
+```
+
+### Defining environment variables
+Make sure to specify the correct uri for mongodb DEPENDING on the environment. You do so by adding the following in server.js:
+```
+  const uri = !process.env.MONGODB_USERNAME
+    ? '{uri from original code goes here}' // local machine
+    : `{connection string goes here. consider using env variables here for confidentiality purposes}`; // cloud
+```
+
+After that...
+- Go to package.json and add `"start": "/node src/server.js"` under scripts, which will be used in production (allows hosting platform to know what command to run to start the web application).
+- Create `app.yaml`, and `prod-env.yaml`, which are deployment config files that tell your hosting platform how to run your app and what environment variables to use in production.
+- In `app.yaml`:
+```
+includes:
+  - prod-env.yaml
+runtime: nodejs24
+```
+- In `prod-env.yaml`:
+```
+env_variables:
+  MONGODB_USERNAME: {username}
+  MONGODB_PASSWORD: {password}
+```
+First line tells the platform to load everything defined in `prod-env.yaml` into the app. The runtime line tells the platform that this app is using Node.js version 24.
+
+- ENSURE that `prod-env.yaml` is included in gitignore.
+
+
+## Deploying a full-stack application
+gcloud CLI grants access to Google Cloud SDK, which is a suite of command-line tools and libraries that enables developers to interact with Google Cloud services. It manages authentication, local configuration, and automates tasks, such as creating Compute Engine virtual machines or deploying App Engine applications.
+- Install gcloud CLI, and ensure that it is working by running `gcloud --version` in the terminal.
+- When we created a Firebase project, we also created a project on Google cloud. Go to console.cloud.google.com, and find + select your project.
+- Run `gcloud auth login` to log in to Google Cloud.
+- Run `gcloud config set project {Your project ID}`, replacing project ID with the ID of the proj from Google Cloud.
+- Go into back-end directory and run `gcloud app deploy` and select region. Will not work unless billing account is made.
+- If successful, you can launch your web application from the URL provided in the terminal.
+
+## Shutting down a Google Cloud project
+Remember to disable billing to shut down Google Cloud project.

@@ -1,1 +1,4 @@
 back-end/credentials.json
+back-end/dist
+back-end/.env
+back-end/prod-env.yaml
